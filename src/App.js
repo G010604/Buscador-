@@ -17,6 +17,9 @@ function AppContent() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loginMessage, setLoginMessage] = useState('');
+  const [plataformas, setPlataformas] = useState('');
+  const [backgroundImage, setBackgroundImage] = useState('');
+  const [inserirMessage, setInserirMessage] = useState('');
 
   const login = () => {
     if (!email.trim() || !password.trim()) {
@@ -65,20 +68,17 @@ function AppContent() {
       }
     })
     .then(response => {
-      if (!response.ok) {
-        return response.json().then(err => {
-          throw new Error(err.error || 'Erro ao buscar jogos');
-        });
+      if (response.ok) {
+        return response.json();
+      } else if (response.status === 404) {
+        throw new Error('Nenhum jogo encontrado');
+      } else {
+        throw new Error('Erro ao buscar jogos');
       }
-      return response.json();
     })
     .then(data => {
-      if (Array.isArray(data)) {
-        setResultados(data);
-        setErro('');
-      } else {
-        setErro('Formato de dados inesperado');
-      }
+      setResultados(data);
+      setErro('');
     })
     .catch(error => {
       console.error('Erro ao buscar jogos:', error);
@@ -86,16 +86,61 @@ function AppContent() {
     });
   };
 
+  const inserirJogo = () => {
+    if (!token) {
+      setErro('Usuário não autenticado');
+      return;
+    }
+
+    if (!nomeJogo.trim() || !plataformas.trim() || !backgroundImage.trim()) {
+      setErro('Todos os campos são obrigatórios');
+      return;
+    }
+
+    fetch('http://localhost:3001/inserir-jogo', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        name: nomeJogo,
+        platforms: plataformas.split(',').map(p => p.trim()),
+        background_image: backgroundImage
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.jogo) {
+        setInserirMessage('Jogo inserido com sucesso!');
+        setErro('');
+        setNomeJogo('');
+        setPlataformas('');
+        setBackgroundImage('');
+      } else {
+        setErro(data.error || 'Erro ao inserir jogo');
+        setInserirMessage('');
+      }
+    })
+    .catch(error => {
+      console.error('Erro ao inserir jogo:', error);
+      setErro('Erro ao tentar inserir jogo');
+      setInserirMessage('');
+    });
+  };
+
   return (
     <div>
-      <Typography variant="h1">Busca de Jogos</Typography>
-
+      {/* Formulário de Login */}
+      <Typography variant="h2">Login</Typography>
       <TextField
+        id="email"
         label="Email"
         value={email}
         onChange={e => setEmail(e.target.value)}
       />
       <TextField
+        id="password"
         label="Senha"
         type="password"
         value={password}
@@ -106,17 +151,44 @@ function AppContent() {
       {loginMessage && <Typography style={{ color: 'green' }}>{loginMessage}</Typography>}
       {erro && <Typography style={{ color: 'red' }}>{erro}</Typography>}
 
+      {/* Formulário de Busca de Jogo */}
+      <Typography variant="h2">Buscar Jogo</Typography>
       <TextField
         id="nomeJogo"
-        label="Digite o nome do jogo"
+        label="Nome do Jogo"
         value={nomeJogo}
         onChange={e => setNomeJogo(e.target.value)}
       />
       <Button variant="contained" onClick={buscarJogo} color="primary">Buscar</Button>
 
-      <React.Suspense fallback={<div>Carregando...</div>}>
+      <React.Suspense fallback={<div>Carregando resultados...</div>}>
         <LazyResultados />
       </React.Suspense>
+
+      {/* Formulário de Inserção de Jogo */}
+      <Typography variant="h2">Inserir Novo Jogo</Typography>
+      <TextField
+        id="nomeJogo"
+        label="Nome do Jogo"
+        value={nomeJogo}
+        onChange={e => setNomeJogo(e.target.value)}
+      />
+      <TextField
+        id="plataformas"
+        label="Plataformas (separadas por vírgula)"
+        value={plataformas}
+        onChange={e => setPlataformas(e.target.value)}
+      />
+      <TextField
+        id="backgroundImage"
+        label="URL da Imagem de Fundo"
+        value={backgroundImage}
+        onChange={e => setBackgroundImage(e.target.value)}
+      />
+      <Button variant="contained" onClick={inserirJogo} color="primary">Inserir Jogo</Button>
+
+      {inserirMessage && <Typography style={{ color: 'green' }}>{inserirMessage}</Typography>}
+      {erro && <Typography style={{ color: 'red' }}>{erro}</Typography>}
     </div>
   );
 }
