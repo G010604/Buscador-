@@ -49,6 +49,13 @@ const UserSchema = new mongoose.Schema({
 });
 const User = mongoose.model('User', UserSchema);
 
+const GameSchema = new mongoose.Schema({
+    name: { type: String, required: true },
+    platforms: { type: [String], required: true },
+    background_image: { type: String, required: true }
+});
+const Game = mongoose.model('Game', GameSchema);
+
 // Limitação de tentativas de login para evitar força bruta
 const loginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutos
@@ -141,6 +148,29 @@ app.get('/busca',
         }
     }
 );
+
+// Rota de inserção de jogo
+app.post('/inserir-jogo', authMiddleware, async (req, res) => {
+    const { name, platforms, background_image } = req.body;
+
+    if (!name || !platforms || !background_image) {
+        return res.status(400).json({ error: 'Todos os campos são obrigatórios' });
+    }
+
+    try {
+        const novoJogo = new Game({
+            name,
+            platforms,
+            background_image
+        });
+
+        await novoJogo.save();
+        res.status(201).json({ message: 'Jogo inserido com sucesso!', jogo: novoJogo });
+    } catch (error) {
+        logger.error('Erro ao inserir jogo', error);
+        res.status(500).json({ error: 'Erro ao inserir jogo' });
+    }
+});
 
 app.listen(3001, () => {
     console.log('Servidor rodando na porta 3001');
