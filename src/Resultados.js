@@ -5,22 +5,32 @@ import { useJogoContext } from './JogoContext';
 const Resultados = () => {
   const { resultados } = useJogoContext();
 
-  if (!Array.isArray(resultados)) {
+  if (!Array.isArray(resultados) || resultados.length === 0) {
     return <Typography style={{ color: 'red' }}>Nenhum dado encontrado</Typography>;
   }
 
   return (
     <div>
-      {resultados.length > 0 ? (
-        resultados.map(jogo => (
-          <div key={jogo.id}>
-            <img src={jogo.background_image} alt={jogo.name} style={{ maxWidth: '200px', maxHeight: '200px' }} />
-            <Typography>{jogo.name} - Plataformas: {jogo.platforms.map(plataforma => plataforma.platform.name).join(', ')}</Typography>
-          </div>
-        ))
-      ) : (
-        <Typography>Nenhum jogo encontrado</Typography>
-      )}
+      {resultados.map((jogo, index) => (
+        // Verifica se os campos necessários estão presentes
+        <div key={jogo.id || index}>
+          {jogo.background_image ? (
+            <img
+              src={jogo.background_image}
+              alt={jogo.name || 'Imagem indisponível'}
+              style={{ maxWidth: '200px', maxHeight: '200px' }}
+            />
+          ) : (
+            <Typography>Imagem indisponível</Typography>
+          )}
+          <Typography>
+            {jogo.name ? jogo.name : 'Nome não disponível'} - Plataformas: 
+            {Array.isArray(jogo.platforms) ? 
+              jogo.platforms.map(plataforma => plataforma.platform?.name || plataforma).join(', ') 
+              : 'Plataformas não disponíveis'}
+          </Typography>
+        </div>
+      ))}
     </div>
   );
 };
