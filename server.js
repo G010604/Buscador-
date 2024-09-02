@@ -10,7 +10,6 @@ const { check, validationResult } = require('express-validator');
 const rateLimit = require('express-rate-limit');
 const winston = require('winston');
 
-// Importação dinâmica para fetch
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 
 const app = express();
@@ -21,7 +20,6 @@ app.use(compression());
 
 const cache = new NodeCache({ stdTTL: 3600 });
 
-// Logger configuration with winston
 const logger = winston.createLogger({
     level: 'info',
     format: winston.format.json(),
@@ -56,10 +54,9 @@ const GameSchema = new mongoose.Schema({
 });
 const Game = mongoose.model('Game', GameSchema);
 
-// Limitação de tentativas de login para evitar força bruta
 const loginLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutos
-    max: 5, // Limite de 5 tentativas de login
+    windowMs: 15 * 60 * 1000, 
+    max: 5, 
     message: 'Muitas tentativas de login, por favor tente novamente mais tarde'
 });
 
@@ -108,7 +105,6 @@ const authMiddleware = (req, res, next) => {
     });
 };
 
-// Rota de busca com cache e sanitização
 app.get('/busca',
     authMiddleware,
     check('nomeJogo').trim().escape().notEmpty().withMessage('O nome do jogo é obrigatório'),
@@ -121,7 +117,7 @@ app.get('/busca',
         const { nomeJogo } = req.query;
         const cachedResult = cache.get(nomeJogo);
         if (cachedResult) {
-            return res.json(cachedResult); // Retorna do cache se existir
+            return res.json(cachedResult); 
         }
 
         try {
@@ -140,7 +136,7 @@ app.get('/busca',
                 return res.status(404).json({ error: 'Nenhum jogo encontrado com esse nome' });
             }
 
-            cache.set(nomeJogo, data.results); // Armazena no cache
+            cache.set(nomeJogo, data.results); 
             res.json(data.results);
         } catch (error) {
             logger.error('Erro ao buscar jogos', error);
@@ -149,7 +145,6 @@ app.get('/busca',
     }
 );
 
-// Rota de inserção de jogo
 app.post('/inserir-jogo', authMiddleware, async (req, res) => {
     const { name, platforms, background_image } = req.body;
 
