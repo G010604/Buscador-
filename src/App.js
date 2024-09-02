@@ -131,7 +131,6 @@ function AppContent() {
 
   return (
     <div>
-      {/* Formulário de Login */}
       <Typography variant="h2">Login</Typography>
       <TextField
         id="email"
@@ -151,7 +150,6 @@ function AppContent() {
       {loginMessage && <Typography style={{ color: 'green' }}>{loginMessage}</Typography>}
       {erro && <Typography style={{ color: 'red' }}>{erro}</Typography>}
 
-      {/* Formulário de Busca de Jogo */}
       <Typography variant="h2">Buscar Jogo</Typography>
       <TextField
         id="nomeJogo"
@@ -165,7 +163,6 @@ function AppContent() {
         <LazyResultados />
       </React.Suspense>
 
-      {/* Formulário de Inserção de Jogo */}
       <Typography variant="h2">Inserir Novo Jogo</Typography>
       <TextField
         id="nomeJogo"
