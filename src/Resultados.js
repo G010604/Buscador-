@@ -12,7 +12,6 @@ const Resultados = () => {
   return (
     <div>
       {resultados.map((jogo, index) => (
-        // Verifica se os campos necessários estão presentes
         <div key={jogo.id || index}>
           {jogo.background_image ? (
             <img

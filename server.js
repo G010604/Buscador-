@@ -121,13 +121,10 @@ app.get('/busca',
         }
 
         try {
-            // Primeiro, buscar os jogos inseridos no banco de dados local
-            const jogosInseridos = await Game.find({ name: new RegExp(nomeJogo, 'i') }); // Ignora maiúsculas/minúsculas
+            const jogosInseridos = await Game.find({ name: new RegExp(nomeJogo, 'i') }); 
 
-            // Se houver jogos inseridos com o nome buscado, eles têm prioridade
             let resultados = jogosInseridos;
 
-            // Agora, buscar na API externa se não houver resultados locais ou para complementar os resultados locais
             const apiKey = 'd209e82699274d69bc9dc1012f9b73b7';
             const url = `https://api.rawg.io/api/games?search=${encodeURIComponent(nomeJogo)}&key=${apiKey}`;
 
@@ -140,15 +137,12 @@ app.get('/busca',
 
             const data = await response.json();
 
-            // Adiciona os jogos da API aos resultados (se houver jogos na API)
             if (data.results && data.results.length > 0) {
-                resultados = resultados.concat(data.results); // Combina os resultados inseridos com os da API
+                resultados = resultados.concat(data.results); 
             }
 
-            // Cacheia o resultado combinado (inseridos + API) para a próxima busca
             cache.set(nomeJogo, resultados);
 
-            // Retorna os resultados com prioridade para os jogos locais
             res.json(resultados);
         } catch (error) {
             logger.error('Erro ao buscar jogos', error);
